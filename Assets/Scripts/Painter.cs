@@ -8,7 +8,13 @@ namespace Painter3D
 {
     public class Painter : MonoBehaviour
     {
+        Renderer rend;
 
+
+        private void Start()
+        {
+            rend = GetComponent<Renderer>();
+        }
 
         public bool Paint(Brush brush, RaycastHit hitInfo)
         {
@@ -28,20 +34,35 @@ namespace Painter3D
 
         private bool PaintByUV(Brush brush, Vector2 textureCoord)
         {
-            Renderer rend = GetComponent<Renderer>();
-
-            // Duplicate the original texture and assign to the material
-            Texture2D texture = Instantiate(rend.material.mainTexture) as Texture2D;
+            
+            Texture2D texture;
+            if (rend.material.mainTexture != null)
+            {
+                // Duplicate the original texture and assign to the material
+                texture = Instantiate(rend.material.mainTexture) as Texture2D;
+            }
+            else
+            {
+                texture = new Texture2D(64, 64);
+            }
             rend.material.mainTexture = texture;
-        
-            //int mipCount = Mathf.Min(3, texture.mipmapCount);
 
             Color[] cols = texture.GetPixels();
 
-            int xOffset = (int) (textureCoord.x * texture.width);
-            int yOffset = (int) (textureCoord.y * texture.height);
+            Vector2Int brushCenter = PainterMathExtension.ConvertTextureCoordToXYOffset(textureCoord, texture);
 
-            cols[ yOffset * texture.width + xOffset] = Color.red;
+            for (int i = 0; i < cols.Length; i++)
+            {
+                //Debug.Log(PainterMathExtension.ConvertPixelNumberInPixelsArrayToCoordinate(i, texture.width));
+                Vector2Int point = PainterMathExtension.ConvertPixelNumberInPixelsArrayToCoordinate(i, texture.width);
+                bool result = PainterMathExtension.CheckIsPixelInsideBrushRadius(brushCenter, point, brush.Size);
+
+                if (result)
+                {
+                    cols[i] = brush.BrushColor;
+                }
+            }
+
 
             texture.SetPixels(cols);
 
@@ -50,6 +71,17 @@ namespace Painter3D
 
             return true;
         }
+
+
+
+
+
+
+
+
+
+
+
         private bool PaintByNearestTriangleSurface(Brush brush, Vector3 point)
         {
             throw new NotImplementedException();

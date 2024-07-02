@@ -12,7 +12,7 @@ namespace Painter3D
         private Color brushColor;
     
         [SerializeField, Range(0, 100)]
-        private float brushScale = 10f;
+        private int brushSize = 10;
 
         public Color BrushColor
         {
@@ -20,16 +20,16 @@ namespace Painter3D
             set { brushColor = value; }
         }
 
-        public float Scale
+        public int Size
         {
-            get { return Mathf.Clamp01(brushScale); }
-            set { brushScale = Mathf.Clamp01(value); }
+            get { return brushSize; }
+            set { brushSize = (int) Mathf.Clamp((float) value, 0f, 100f); }
         }
 
-        public Brush(Color color, float scale)
+        public Brush(Color color, int size)
         {
             BrushColor = color;
-            Scale = scale;
+            Size = size;
         }
 
         public object Clone()
