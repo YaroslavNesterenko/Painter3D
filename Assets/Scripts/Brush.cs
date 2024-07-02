@@ -11,11 +11,8 @@ namespace Painter3D
         [SerializeField]
         private Color brushColor;
     
-        [SerializeField, Range(0, 1)]
-        private float brushScale = 0.1f;
-
-        [SerializeField, Range(0, 360)]
-        private float brushRotateAngle = 0;
+        [SerializeField, Range(0, 100)]
+        private float brushScale = 10f;
 
         public Color BrushColor
         {
@@ -27,12 +24,6 @@ namespace Painter3D
         {
             get { return Mathf.Clamp01(brushScale); }
             set { brushScale = Mathf.Clamp01(value); }
-        }
-
-        public float BrushRotateAngle
-        {
-            get { return brushRotateAngle; }
-            set { brushRotateAngle = value; }
         }
 
         public Brush(Color color, float scale)

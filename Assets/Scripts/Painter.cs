@@ -28,7 +28,27 @@ namespace Painter3D
 
         private bool PaintByUV(Brush brush, Vector2 textureCoord)
         {
-            throw new NotImplementedException();
+            Renderer rend = GetComponent<Renderer>();
+
+            // Duplicate the original texture and assign to the material
+            Texture2D texture = Instantiate(rend.material.mainTexture) as Texture2D;
+            rend.material.mainTexture = texture;
+        
+            //int mipCount = Mathf.Min(3, texture.mipmapCount);
+
+            Color[] cols = texture.GetPixels();
+
+            int xOffset = (int) (textureCoord.x * texture.width);
+            int yOffset = (int) (textureCoord.y * texture.height);
+
+            cols[ yOffset * texture.width + xOffset] = Color.red;
+
+            texture.SetPixels(cols);
+
+            // Copy the changes to the GPU. and don't recalculate mipmap levels.
+            texture.Apply(false);
+
+            return true;
         }
         private bool PaintByNearestTriangleSurface(Brush brush, Vector3 point)
         {
