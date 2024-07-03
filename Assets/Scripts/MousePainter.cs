@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Painter3D
 {
@@ -20,15 +21,24 @@ namespace Painter3D
             set { erase = value; }
         }
 
+        [SerializeField]
+        private BrushConfigurator brushConfigurator;
+
+        private void Awake()
+        {
+            brushConfigurator.SetBrush(brush);
+        }
+
         private void Update()
         {
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
             {
                 var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 bool success = true;
                 RaycastHit hitInfo;
                 if (Physics.Raycast(ray, out hitInfo))
                 {
+                    Debug.Log(hitInfo.collider.name);
                     var objectToPainting = hitInfo.transform.GetComponent<Painter>();
                     if (objectToPainting != null)
                     {
