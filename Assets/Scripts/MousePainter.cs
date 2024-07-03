@@ -9,6 +9,8 @@ namespace Painter3D
     public class MousePainter : MonoBehaviour
     {
 
+        EventSystem eventSystem;
+
         [SerializeField]
         private Brush brush;
 
@@ -27,11 +29,13 @@ namespace Painter3D
         private void Awake()
         {
             brushConfigurator.SetBrush(brush);
+            eventSystem = EventSystem.current;
         }
+
 
         private void Update()
         {
-            if (Input.GetMouseButton(0) && !EventSystem.current.IsPointerOverGameObject())
+            if (Input.GetMouseButton(0) && !IsPointerOverUIObject())
             {
                 var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 bool success = true;
@@ -55,6 +59,16 @@ namespace Painter3D
                 }
             }
 
+        }
+
+        private bool IsPointerOverUIObject()
+        {
+            PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
+            eventDataCurrentPosition.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
+            return results.Count > 0;
         }
     }
 }
