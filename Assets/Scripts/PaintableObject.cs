@@ -17,10 +17,17 @@ namespace Painter3D
         private bool isTextureCopied = false;
         private Vector2Int brushCenter;
 
+        private bool isObjectWasPainted = false;
+        public bool IsObjectWasPainted
+        {
+            get { return isObjectWasPainted; }
+        }
+
         private void Start()
         {
             rend = GetComponent<Renderer>();
-            MousePainter.AddPaintableObjectToList(this);
+            PaintableObjectsContainer.AddPaintableObjectToList(this);
+            CopyTextureOrCreateNewTexture();
         }
 
         public bool Paint(Brush brush, RaycastHit hitInfo)
@@ -39,7 +46,7 @@ namespace Painter3D
 
         private bool PaintByUV(Brush brush, Vector2 textureCoord)
         {
-            CopyTextureOrCreateNewTexture();
+            isObjectWasPainted = true;
 
             brushCenter = PainterMathExtension.ConvertTextureCoordToXYOffset(textureCoord, texture);
 
@@ -53,6 +60,7 @@ namespace Painter3D
             return true;
         }
 
+        
         private void CopyTextureOrCreateNewTexture()
         {
             if (!isTextureCopied)
@@ -137,15 +145,34 @@ namespace Painter3D
 
         public void Clear()
         {
-            Array.Copy(colsDump, cols, cols.Length);
-            texture.SetPixels(cols);
+            if (isObjectWasPainted)
+            {
 
-            texture.Apply(false);
+                isObjectWasPainted = false;
+                Array.Copy(colsDump, cols, cols.Length);
+                texture.SetPixels(cols);
+
+                texture.Apply(false);
+            }
+        }
+
+        public Texture2D GetPaintedTexture()
+        {
+            return texture;
+        }
+
+        public void SetPaintedTexture(Texture2D loadedTexture)
+        {
+            texture = loadedTexture;
+            rend.material.mainTexture = texture;
+
+            cols = texture.GetPixels();
+            colsDump = texture.GetPixels();
         }
 
         private void OnDestroy()
         {
-            MousePainter.RemovePaintableObjectToList(this);
+            PaintableObjectsContainer.RemovePaintableObjectToList(this);
         }
     }
 }
