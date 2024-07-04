@@ -64,6 +64,12 @@ namespace Painter3D
             currentBrushColor.color = currentBrush.BrushColor;
         }
 
+        private void OnDestroy()
+        {
+            brushSizeSlider.onValueChanged.RemoveAllListeners();
+            brushColorR.onValueChanged.RemoveAllListeners();
+            brushColorG.onValueChanged.RemoveAllListeners();
+            brushColorB.onValueChanged.RemoveAllListeners();
+        }
     }
-
 }

@@ -19,4 +19,9 @@ public class SliderValueShower : MonoBehaviour
     {
         valueText.text = slider.value.ToString();
     }
+
+    private void OnDestroy()
+    {
+        slider.onValueChanged.RemoveAllListeners();
+    }
 }

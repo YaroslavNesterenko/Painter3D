@@ -26,6 +26,11 @@ namespace Painter3D
         [SerializeField]
         private BrushConfigurator brushConfigurator;
 
+        Ray ray;
+        bool success;
+        RaycastHit hitInfo;
+        PaintableObject objectToPainting;
+
         private void Awake()
         {
             brushConfigurator.SetBrush(brush);
@@ -37,19 +42,18 @@ namespace Painter3D
         {
             if (Input.GetMouseButton(0) && !IsPointerOverUIObject())
             {
-                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                bool success = true;
-                RaycastHit hitInfo;
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                success = true;
+                
                 if (Physics.Raycast(ray, out hitInfo))
                 {
-                    Debug.Log(hitInfo.collider.name);
-                    var objectToPainting = hitInfo.transform.GetComponent<Painter>();
+                    //Debug.Log(hitInfo.collider.name);
+                    objectToPainting = hitInfo.transform.GetComponent<PaintableObject>();
                     if (objectToPainting != null)
                     {
                         success = erase
                             ? objectToPainting.Erase(brush, hitInfo)
                             : objectToPainting.Paint(brush, hitInfo);
-
                     }
 
                     if (!success)
@@ -58,16 +62,18 @@ namespace Painter3D
                     }
                 }
             }
-
         }
+
+        PointerEventData eventDataCurrentPosition;
+        List<RaycastResult> results;
 
         private bool IsPointerOverUIObject()
         {
-            PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
+            eventDataCurrentPosition = new PointerEventData(EventSystem.current);
             eventDataCurrentPosition.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 
-            List<RaycastResult> results = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
+            results = new List<RaycastResult>();
+            eventSystem.RaycastAll(eventDataCurrentPosition, results);
             return results.Count > 0;
         }
     }
