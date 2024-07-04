@@ -26,6 +26,9 @@ namespace Painter3D
         [SerializeField]
         private BrushConfigurator brushConfigurator;
 
+        private static List<PaintableObject> paintableObjects = new List<PaintableObject>();
+
+
         Ray ray;
         bool success;
         RaycastHit hitInfo;
@@ -75,6 +78,25 @@ namespace Painter3D
             results = new List<RaycastResult>();
             eventSystem.RaycastAll(eventDataCurrentPosition, results);
             return results.Count > 0;
+        }
+
+        public static void AddPaintableObjectToList(PaintableObject paintableObject)
+        {
+            paintableObjects.Add(paintableObject);
+        }
+
+        [ContextMenu("Clean")]
+        public void CleanTheDrawing()
+        {
+            foreach (var paintableObj in paintableObjects)
+            {
+                paintableObj.Clear();
+            }
+        }
+
+        public static void RemovePaintableObjectToList(PaintableObject paintableObject)
+        {
+            paintableObjects.Remove(paintableObject);
         }
     }
 }

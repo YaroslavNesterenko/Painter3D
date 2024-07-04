@@ -20,6 +20,7 @@ namespace Painter3D
         private void Start()
         {
             rend = GetComponent<Renderer>();
+            MousePainter.AddPaintableObjectToList(this);
         }
 
         public bool Paint(Brush brush, RaycastHit hitInfo)
@@ -87,9 +88,8 @@ namespace Painter3D
                     }
                 }
             );
-
         }
-  
+
         public bool Erase(Brush brush, RaycastHit hitInfo)
         {
             if (hitInfo.collider != null)
@@ -133,6 +133,19 @@ namespace Painter3D
                     }
                 }
             );
+        }
+
+        public void Clear()
+        {
+            Array.Copy(colsDump, cols, cols.Length);
+            texture.SetPixels(cols);
+
+            texture.Apply(false);
+        }
+
+        private void OnDestroy()
+        {
+            MousePainter.RemovePaintableObjectToList(this);
         }
     }
 }
