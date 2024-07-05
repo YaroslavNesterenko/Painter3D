@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Painter3D
 {
@@ -12,10 +13,12 @@ namespace Painter3D
         private Renderer rend;
          
         private Texture2D texture;
+        private int texWidth;
         private Color[] cols;
         private Color[] colsDump;
         private bool isTextureCopied = false;
-        private Vector2Int brushCenter;
+        private Vector2Int brushCenter = Vector2Int.zero;
+        private Vector2Int previousBrushCenter = Vector2Int.zero;
 
         private bool isObjectWasPainted = false;
         public bool IsObjectWasPainted
@@ -50,7 +53,17 @@ namespace Painter3D
 
             brushCenter = PainterMathExtension.ConvertTextureCoordToXYOffset(textureCoord, texture);
 
-            ChangePixelsColor(brush, texture, cols, brushCenter);
+            Profiler.BeginSample("PaintByUV");
+            if (previousBrushCenter == Vector2Int.zero)
+            {
+                ChangePixelsColor(brush, texture, cols, brushCenter);
+            }
+            else
+            {
+                FindPointsOnLine(brush, texture, cols, brushCenter, previousBrushCenter);
+            }
+            Profiler.EndSample();
+            previousBrushCenter = brushCenter;
 
             texture.SetPixels(cols);
 
@@ -60,7 +73,6 @@ namespace Painter3D
             return true;
         }
 
-        
         private void CopyTextureOrCreateNewTexture()
         {
             if (!isTextureCopied)
@@ -76,6 +88,7 @@ namespace Painter3D
                 }
                 rend.material.mainTexture = texture;
 
+                texWidth = texture.width;
                 cols = texture.GetPixels();
                 colsDump = texture.GetPixels();
             }
@@ -83,7 +96,7 @@ namespace Painter3D
 
         private void ChangePixelsColor(Brush brush, Texture2D texture, Color[] cols, Vector2Int brushCenter)
         {
-            int texWidth = texture.width;
+            //Profiler.BeginSample("ChangePixelsColor");
             Parallel.For(0, cols.Length,
                 index =>
                 {
@@ -96,6 +109,28 @@ namespace Painter3D
                     }
                 }
             );
+        }
+
+        private void FindPointsOnLine(Brush brush, Texture2D texture, Color[] cols, Vector2Int brushCenter, Vector2Int previousBrushCenter)
+        {
+            var diff_X = brushCenter.x - previousBrushCenter.x;
+            var diff_Y = brushCenter.y - previousBrushCenter.y;
+            int pointNum = 3;
+
+            var interval_X = diff_X / (pointNum + 1);
+            var interval_Y = diff_Y / (pointNum + 1);
+
+            List<Vector2Int> pointList = new List<Vector2Int>();
+            for (int i = 1; i <= pointNum; i++)
+            {
+                pointList.Add(new Vector2Int(previousBrushCenter.x + interval_X * i, previousBrushCenter.y + interval_Y * i));
+            }
+            
+            foreach (var item in pointList)
+            {
+
+                ChangePixelsColor(brush, texture, cols, item);
+            }
         }
 
         public bool Erase(Brush brush, RaycastHit hitInfo)
@@ -145,9 +180,8 @@ namespace Painter3D
 
         public void Clear()
         {
-            if (isObjectWasPainted)
+            //if (isObjectWasPainted)
             {
-
                 isObjectWasPainted = false;
                 Array.Copy(colsDump, cols, cols.Length);
                 texture.SetPixels(cols);
@@ -167,7 +201,7 @@ namespace Painter3D
             rend.material.mainTexture = texture;
 
             cols = texture.GetPixels();
-            colsDump = texture.GetPixels();
+            //colsDump = texture.GetPixels();
         }
 
         private void OnDestroy()

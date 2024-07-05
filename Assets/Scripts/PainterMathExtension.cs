@@ -27,7 +27,12 @@ namespace Painter3D
         {
             bool result = false;
 
-            result = ((center.x - point.x) * (center.x - point.x) + (center.y - point.y) * (center.y - point.y)) <= radius * radius;
+            if (Mathf.Abs(center.x - point.x) < radius &&
+                Mathf.Abs(center.y - point.y) < radius)
+            {
+                result = true;
+            }
+            //result = ((center.x - point.x) * (center.x - point.x) + (center.y - point.y) * (center.y - point.y)) <= radius * radius;
 
             return result;
         }

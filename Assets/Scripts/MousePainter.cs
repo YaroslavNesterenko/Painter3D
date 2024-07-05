@@ -39,7 +39,7 @@ namespace Painter3D
         }
 
 
-        private void Update()
+        private void FixedUpdate()
         {
             if (Input.GetMouseButton(0) && !IsPointerOverUIObject())
             {
